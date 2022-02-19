@@ -2,7 +2,7 @@ import json
 import requests
 import sys
 from decimal import Decimal
-import psycopg2
+
 
 headers = { 
             'Access-Control-Allow-Headers': 'Content-Type',
@@ -25,7 +25,7 @@ def lambda_handler(event, context):
                 }
                 return cb(200,body)
             else:
-                con=connect()
+                con = common.connect()
                 cursor=con.cursor()
                 cursor.execute("CREATE TABLE IF NOT EXISTS crmproduct(autoid serial PRIMARY KEY,productid varchar(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50),skucode varchar(20), name VARCHAR(255),price varchar(50), sortby VARCHAR(50),t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255))")
                 con.commit()      
@@ -95,9 +95,7 @@ def lambda_handler(event, context):
             return cb(200,response)
 
 
-def connect():
-    con=psycopg2.connect(dbname="crmdb", user="crmuser",host="crmdb.cidwusqgeeug.ap-southeast-1.rds.amazonaws.com", password="Nirvasoft1234",port="5432")
-    return con
+
 
 
 def default(obj):

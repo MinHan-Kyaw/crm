@@ -25,7 +25,7 @@ This module implements thread-safe (and not) connection pools.
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
 # License for more details.
 
-import psycopg2
+
 from psycopg2 import extensions as _ext
 
 

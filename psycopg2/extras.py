@@ -33,7 +33,7 @@ from collections import namedtuple, OrderedDict
 
 import logging as _logging
 
-import psycopg2
+
 from psycopg2 import extensions as _ext
 from .extensions import cursor as _cursor
 from .extensions import connection as _connection

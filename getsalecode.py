@@ -2,7 +2,7 @@ import json
 import requests
 import sys
 from decimal import Decimal
-import psycopg2
+
 
 headers = { 
             'Access-Control-Allow-Headers': 'Content-Type',
@@ -25,7 +25,7 @@ def lambda_handler(event, context):
                 }
                 return cb(200,body)
             else:
-                con=connect()
+                con = common.connect()
                 cursor=con.cursor()
                   
                 userid = body['userid']
@@ -85,9 +85,7 @@ def lambda_handler(event, context):
             return cb(200,response)
 
 
-def connect():
-    con=psycopg2.connect(dbname="crmdb", user="crmuser",host="crmdb.cidwusqgeeug.ap-southeast-1.rds.amazonaws.com", password="Nirvasoft1234",port="5432")
-    return con
+
 
 
 def default(obj):

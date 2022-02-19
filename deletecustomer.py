@@ -6,11 +6,16 @@ import sys
 from datetime import datetime
 from boto3.dynamodb.conditions import Key, Attr
 from decimal import Decimal
-import psycopg2
-# import jwt
 
-client = boto3.client('s3')
-s3 = boto3.resource('s3')
+# import jwt
+import common
+
+s3value = common.GetBucketSecret()
+ACCESS_ID = s3value['access_id']
+SECRET_KEY = s3value['secret_key']
+
+client = boto3.client('s3',aws_access_key_id=ACCESS_ID,aws_secret_access_key=SECRET_KEY)
+s3 = boto3.resource('s3',aws_access_key_id=ACCESS_ID,aws_secret_access_key=SECRET_KEY)
 
 headers = { 
             'Access-Control-Allow-Headers': 'Content-Type',
@@ -32,7 +37,7 @@ def lambda_handler(event, context):
                 }
                 return cb(200,body)
             else:
-                con=connect()
+                con = common.connect()
                 cursor=con.cursor()
                 cursor.execute("CREATE TABLE IF NOT EXISTS crmlead(autoid serial PRIMARY KEY, leadid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),leadtype VARCHAR(20), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255),product TEXT, post VARCHAR(255), organization VARCHAR(255), currency VARCHAR(20), amount VARCHAR(50),note VARCHAR(255), date VARCHAR(20), status VARCHAR(10),sortby VARCHAR(50),filename TEXT, t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255))")
                 cursor.execute("CREATE TABLE IF NOT EXISTS crmcustomer(autoid serial PRIMARY KEY, customerid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),customertype VARCHAR(20), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255), status VARCHAR(10),sortby VARCHAR(50),filename TEXT, t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255))")
@@ -108,9 +113,7 @@ def lambda_handler(event, context):
             return cb(200,response)
 
 
-def connect():
-    con=psycopg2.connect(dbname="crmdb", user="crmuser",host="crmdb.cidwusqgeeug.ap-southeast-1.rds.amazonaws.com", password="Nirvasoft1234",port="5432")
-    return con
+
 
 
 def default(obj):

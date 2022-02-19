@@ -12,7 +12,7 @@ import random
 import string
 import time
 from decimal import Decimal
-import psycopg2
+
 
 
 headers = { 
@@ -32,7 +32,7 @@ def lambda_handler(event, context):
                 }
                 return cb(200,body)
             else:
-                con=connect()
+                con = common.connect()
                 cursor=con.cursor()
                 cursor.execute("CREATE TABLE IF NOT EXISTS crmdealstage(autoid serial PRIMARY KEY, stageid VARCHAR(10), name varchar(50),domainid varchar(20),appid varchar(20),sort varchar(10))")
                 con.commit()      
@@ -77,9 +77,7 @@ def lambda_handler(event, context):
             return cb(200,response)
 
 
-def connect():
-    con=psycopg2.connect(dbname="crmdb", user="crmuser",host="crmdb.cidwusqgeeug.ap-southeast-1.rds.amazonaws.com", password="Nirvasoft1234",port="5432")
-    return con
+
 
 
 def default(obj):
