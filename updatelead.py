@@ -10,7 +10,6 @@ import random
 import string
 import time
 from decimal import Decimal
-
 import common
 
 s3value = common.GetBucketSecret()
@@ -41,9 +40,9 @@ def lambda_handler(event, context):
             else:
                 con = common.connect()
                 cursor=con.cursor()
-                cursor.execute("CREATE TABLE IF NOT EXISTS crmlead(autoid serial PRIMARY KEY, leadid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),leadtype VARCHAR(20), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255),product TEXT, post VARCHAR(255), organization VARCHAR(255), currency VARCHAR(20), amount VARCHAR(50),note VARCHAR(255), date VARCHAR(20), status VARCHAR(10),sortby VARCHAR(50),filename VARCHAR(50), t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255),industrytype TEXT,leadsource TEXT)")
-                cursor.execute("CREATE TABLE IF NOT EXISTS crmproduct(autoid serial PRIMARY KEY,productid varchar(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50),skucode varchar(20), name VARCHAR(255),price VARCHAR(50), sortby VARCHAR(50),t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255))")
-                con.commit()     
+                # cursor.execute("CREATE TABLE IF NOT EXISTS crmlead(autoid serial PRIMARY KEY, leadid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),leadtype VARCHAR(20), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255),product TEXT, post VARCHAR(255), organization VARCHAR(255), currency VARCHAR(20), amount VARCHAR(50),note VARCHAR(255), date VARCHAR(20), status VARCHAR(10),sortby VARCHAR(50),filename VARCHAR(50), t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255),industrytype TEXT,leadsource TEXT)")
+                # cursor.execute("CREATE TABLE IF NOT EXISTS crmproduct(autoid serial PRIMARY KEY,productid varchar(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50),skucode varchar(20), name VARCHAR(255),price VARCHAR(50), sortby VARCHAR(50),t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255))")
+                # con.commit()     
                 userid = body['userid']
                 atoken = body['atoken']
                 appid = body['appid']  
@@ -75,6 +74,7 @@ def lambda_handler(event, context):
                 tokenreturn=checkAToken(userid,appid,atoken)
                 if tokenreturn == "0":
                     # cursor=con.cursor()
+                    bucket = s3.Bucket('kunyekbucket')
                     userres = userorgTable.scan(
                         FilterExpression=Attr('domainid').eq(domainid) & Attr('orgid').eq(
                             orgid) & Attr('t1').eq('300') & Attr('userid').eq(userid)
@@ -98,7 +98,8 @@ def lambda_handler(event, context):
                     else:
                         if len(deletefilename) > 0:
                             for i in range(len(deletefilename)):
-                                s3.Object('kunyekbucket',"crm/" + leadid+"/"+deletefilename[i]).delete()  
+                                bucket.objects.filter(Prefix="crm/" + leadid+"/"+deletefilename[i]).delete()
+                                # s3.Object('kunyekbucket',"crm/" + leadid+"/"+deletefilename[i]).delete()  
                         # con = common.connect()
                         # cursor=con.cursor()
                         localFormat = '%Y-%m-%d %H:%M:%S'
@@ -134,6 +135,7 @@ def lambda_handler(event, context):
                                     timestamp =str(int(time.time()*1000.0))
                                     productid = str(''.join([random.choice(string.digits+timestamp) for n in range(10)]))                  
                                     sortby = now_asia.strftime(sortbylocalFormat)
+                                    common.resetSerialNumber("crmproduct")       
                                     prosql = "INSERT INTO crmproduct(productid,domainid,appid,orgid,userid,skucode, name,price,sortby) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                     prodata = (productid,domainid,appid,orgid,userid,product[i]['skucode'],product[i]['name'],product[i]['price'],sortby)
                                     cursor.execute(prosql, prodata)

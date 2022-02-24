@@ -39,12 +39,12 @@ def lambda_handler(event, context):
             else:
                 con = common.connect()
                 cursor=con.cursor()
-                cursor.execute("CREATE TABLE IF NOT EXISTS crmlead(autoid serial PRIMARY KEY, leadid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),leadtype VARCHAR(20), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255),product TEXT, post VARCHAR(255), organization VARCHAR(255), currency VARCHAR(20), amount VARCHAR(50),note VARCHAR(255), date VARCHAR(20), status VARCHAR(10),sortby VARCHAR(50),filename TEXT, t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255),industrytype TEXT)")
-                cursor.execute("CREATE TABLE IF NOT EXISTS crmcustomer(autoid serial PRIMARY KEY, customerid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),customertype VARCHAR(20), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255), status VARCHAR(10),sortby VARCHAR(50),filename TEXT, t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255),industrytype TEXT)")
-                cursor.execute("CREATE TABLE IF NOT EXISTS crmcontact(autoid serial PRIMARY KEY,contactid VARCHAR(10), customerid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),post VARCHAR(255), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255),sortby VARCHAR(50),t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255))")
-                cursor.execute("CREATE TABLE IF NOT EXISTS crmdeal(autoid serial PRIMARY KEY, dealid VARCHAR(10), customerid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), targetdate Date, closingdate Date, currency VARCHAR(20), amount VARCHAR(50), product TEXT, status varchar(20), stageid varchar(20), remark TEXT, sortby VARCHAR(50),t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255),salecode VARCHAR(50),opendate Date)")
-                cursor.execute("CREATE TABLE IF NOT EXISTS crmproduct(autoid serial PRIMARY KEY,productid varchar(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50),skucode varchar(20), name VARCHAR(255),price varchar(50), sortby VARCHAR(50),t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255))")
-                con.commit()      
+                # cursor.execute("CREATE TABLE IF NOT EXISTS crmlead(autoid serial PRIMARY KEY, leadid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),leadtype VARCHAR(20), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255),product TEXT, post VARCHAR(255), organization VARCHAR(255), currency VARCHAR(20), amount VARCHAR(50),note VARCHAR(255), date VARCHAR(20), status VARCHAR(10),sortby VARCHAR(50),filename TEXT, t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255),industrytype TEXT)")
+                # cursor.execute("CREATE TABLE IF NOT EXISTS crmcustomer(autoid serial PRIMARY KEY, customerid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),customertype VARCHAR(20), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255), status VARCHAR(10),sortby VARCHAR(50),filename TEXT, t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255),industrytype TEXT)")
+                # cursor.execute("CREATE TABLE IF NOT EXISTS crmcontact(autoid serial PRIMARY KEY,contactid VARCHAR(10), customerid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),post VARCHAR(255), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255),sortby VARCHAR(50),t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255))")
+                # cursor.execute("CREATE TABLE IF NOT EXISTS crmdeal(autoid serial PRIMARY KEY, dealid VARCHAR(10), customerid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), targetdate Date, closingdate Date, currency VARCHAR(20), amount VARCHAR(50), product TEXT, status varchar(20), stageid varchar(20), remark TEXT, sortby VARCHAR(50),t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255),salecode VARCHAR(50),opendate Date)")
+                # cursor.execute("CREATE TABLE IF NOT EXISTS crmproduct(autoid serial PRIMARY KEY,productid varchar(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50),skucode varchar(20), name VARCHAR(255),price varchar(50), sortby VARCHAR(50),t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255))")
+                # con.commit()      
                 userid = body['userid']
                 atoken = body['atoken']
                 appid = body['appid']  
@@ -96,6 +96,7 @@ def lambda_handler(event, context):
                     sortby = now_asia.strftime(sortbylocalFormat) 
                     filedata = []
                     fileurl = ""
+                    bucket = s3.Bucket('kunyekbucket')
                     if len(filename) > 0 and tmpfilename != "":
                         for f in range(len(filename)):
                             fileurl = ""
@@ -104,7 +105,8 @@ def lambda_handler(event, context):
                                     'Key':'crm/'+ tmpfilename + '/' +filename[f]
                                 }
                             client.copy(copy_source, 'kunyekbucket', 'crm/'+ customerid + '/' +filename[f])
-                            s3.Object('kunyekbucket','crm/'+tmpfilename+ '/' +filename[f]).delete()  
+                            bucket.objects.filter(Prefix='crm/'+tmpfilename+ '/' +filename[f]).delete()
+                            # s3.Object('kunyekbucket','crm/'+tmpfilename+ '/' +filename[f]).delete()  
                             # client.delete_object(Bucket="kunyekbucket", Key='crm/'+tmpfilename+ '/' +filename[f])  
                             expiretime = now_asia.strftime(localFormat)  
                             datetimenow = str(expiretime)                            
@@ -119,8 +121,10 @@ def lambda_handler(event, context):
                             )
                             filedata.append({"filename":filename[f],"fileurl":fileurl,"fileexp":datetimenow})
                         if len(filename) - 1 == f:
-                            s3.Object('kunyekbucket','crm/'+tmpfilename).delete()  
+                            bucket.objects.filter(Prefix='crm/'+tmpfilename).delete()
+                            # s3.Object('kunyekbucket','crm/'+tmpfilename).delete()  
                             # client.delete_object(Bucket="kunyekbucket", Key='crm/'+tmpfilename)  
+                    common.resetSerialNumber("crmcustomer")
                     sql = "INSERT INTO crmcustomer(customerid,domainid,appid,orgid,userid ,name , customertype,mobile,email,address1,address2,status,sortby,filename,industrytype) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                     data = (customerid,domainid,appid,orgid,userid, customername,customertype,customermobile,customeremail,customeraddress1,customeraddress2,status,sortby,str(filedata),industrytype)
                     cursor.execute(sql, data)  
@@ -147,6 +151,7 @@ def lambda_handler(event, context):
                             if 'opendate' in deallist[i]:
                                 opendate = deallist[i]['opendate']
                             dealid = str(''.join([random.choice(string.digits+timestamp) for n in range(10)]))  
+                            common.resetSerialNumber("crmdeal")
                             dealsql = "INSERT INTO crmdeal(dealid,customerid,domainid,appid,orgid,userid,product, targetdate, closingdate,currency,amount,status,stageid,remark,sortby,opendate,salecode) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                             dealdata = (dealid,customerid,domainid,appid,orgid,userid,str(deallist[i]['product']),deallist[i]['targetdate'],deallist[i]['closingdate'],deallist[i]['currency'],deallist[i]['amount'],deallist[i]['status'],deallist[i]['stageid'],deallist[i]['remark'],sortby,opendate,salecode)
                             oyear = str(opendate)[0:4]
@@ -193,6 +198,7 @@ def lambda_handler(event, context):
                                         timestamp =str(int(time.time()*1000.0))
                                         productid = str(''.join([random.choice(string.digits+timestamp) for n in range(10)]))                  
                                         sortby = now_asia.strftime(sortbylocalFormat)
+                                        common.resetSerialNumber("crmproduct")
                                         prosql = "INSERT INTO crmproduct(productid,domainid,appid,orgid,userid,skucode, name,price,sortby) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                         prodata = (productid,domainid,appid,orgid,userid,product[ii]['skucode'],product[ii]['name'],product[ii]['price'],sortby)
                                         cursor.execute(prosql, prodata)
@@ -209,6 +215,7 @@ def lambda_handler(event, context):
                             contactid = str(''.join([random.choice(string.digits+timestamp) for n in range(10)]))                  
                             now_asia = datetime.now(ZoneInfo("Asia/Yangon"))
                             sortby = now_asia.strftime(sortbylocalFormat) 
+                            common.resetSerialNumber("crmcontact")
                             consql = "INSERT INTO crmcontact(contactid, customerid,domainid,appid,orgid,userid ,name , post,mobile,email,address1,address2,sortby) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                             condata = (contactid,customerid,domainid,appid,orgid,userid, contactlist[i]['contactname'],contactlist[i]['post'],contactlist[i]['contactmobile'],contactlist[i]['contactemail'],contactlist[i]['contactaddress1'],contactlist[i]['contactaddress2'],sortby)
                             contactreObj['contactname'] = contactlist[i]['contactname']

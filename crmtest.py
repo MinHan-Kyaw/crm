@@ -35,6 +35,8 @@ def lambda_handler(event, context):
     if event['httpMethod'] == "POST":
         try:
             body = json.loads(event['body'])
+            con = common.connect()
+            return cb1(200,con)
             # header=event['headers']
             # btoken=header['btoken']
             # puserid=header['puserid']

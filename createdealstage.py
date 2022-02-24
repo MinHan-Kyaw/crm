@@ -12,7 +12,7 @@ import random
 import string
 import time
 from decimal import Decimal
-
+import common
 
 
 headers = { 
@@ -34,8 +34,8 @@ def lambda_handler(event, context):
             else:
                 con = common.connect()
                 cursor=con.cursor()
-                cursor.execute("CREATE TABLE IF NOT EXISTS crmdealstage(autoid serial PRIMARY KEY, stageid VARCHAR(10), name varchar(50),domainid varchar(20),appid varchar(20),sort varchar(10))")
-                con.commit()      
+                # cursor.execute("CREATE TABLE IF NOT EXISTS crmdealstage(autoid serial PRIMARY KEY, stageid VARCHAR(10), name varchar(50),domainid varchar(20),appid varchar(20),sort varchar(10))")
+                # con.commit()      
                 userid = body['userid']
                 atoken = body['atoken']
                 appid = body['appid']  
@@ -45,7 +45,8 @@ def lambda_handler(event, context):
                 tokenreturn=checkAToken(userid,appid,atoken)
                 if tokenreturn == "0":
                     timestamp =str(int(time.time()*1000.0))
-                    stageid = str(''.join([random.choice(string.digits+timestamp) for n in range(10)]))                  
+                    stageid = str(''.join([random.choice(string.digits+timestamp) for n in range(10)]))    
+                    common.resetSerialNumber("crmdealstage")              
                     sql = "INSERT INTO crmdealstage(stageid,appid,domainid, name,sort) VALUES(%s,%s,%s,%s,%s)"
                     data = (stageid,appid,domainid, name,sort)
                     cursor.execute(sql, data)

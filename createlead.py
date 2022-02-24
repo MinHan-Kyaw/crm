@@ -41,9 +41,9 @@ def lambda_handler(event, context):
             else:
                 con = common.connect()
                 cursor=con.cursor()
-                cursor.execute("CREATE TABLE IF NOT EXISTS crmlead(autoid serial PRIMARY KEY, leadid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),leadtype VARCHAR(20), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255),product TEXT, post VARCHAR(255), organization VARCHAR(255), currency VARCHAR(20), amount VARCHAR(50),note VARCHAR(255), date VARCHAR(20), status VARCHAR(10),sortby VARCHAR(50),filename TEXT, t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255),industrytype TEXT,leadsource TEXT)")
-                cursor.execute("CREATE TABLE IF NOT EXISTS crmproduct(autoid serial PRIMARY KEY,productid varchar(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50),skucode varchar(20), name VARCHAR(255),price VARCHAR(50), sortby VARCHAR(50),t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255))")
-                con.commit()      
+                # cursor.execute("CREATE TABLE IF NOT EXISTS crmlead(autoid serial PRIMARY KEY, leadid VARCHAR(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50), name VARCHAR(255),leadtype VARCHAR(20), mobile VARCHAR(255), email VARCHAR(255), address1 VARCHAR(255),address2 VARCHAR(255),product TEXT, post VARCHAR(255), organization VARCHAR(255), currency VARCHAR(20), amount VARCHAR(50),note VARCHAR(255), date VARCHAR(20), status VARCHAR(10),sortby VARCHAR(50),filename TEXT, t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255),industrytype TEXT,leadsource TEXT)")
+                # cursor.execute("CREATE TABLE IF NOT EXISTS crmproduct(autoid serial PRIMARY KEY,productid varchar(10),domainid varchar(20),appid varchar(20),orgid varchar(20), userid varchar(50),skucode varchar(20), name VARCHAR(255),price VARCHAR(50), sortby VARCHAR(50),t1 VARCHAR(255),t2 VARCHAR(255),t3 VARCHAR(255),t4 VARCHAR(255),t5 VARCHAR(255),t6 VARCHAR(255),t7 VARCHAR(255),t8 VARCHAR(255),t9 VARCHAR(255),t10 VARCHAR(255))")
+                # con.commit()      
                 userid = body['userid']
                 atoken = body['atoken']
                 appid = body['appid']  
@@ -79,7 +79,7 @@ def lambda_handler(event, context):
                     now_asia = datetime.now(ZoneInfo("Asia/Yangon"))
                     sortby = now_asia.strftime(sortbylocalFormat)   
                     filedata = []
-                   
+                    bucket = s3.Bucket('kunyekbucket')
                     localFormat = '%Y-%m-%d %H:%M:%S'  
                     if len(filename) > 0 and tmpfilename != "":
                         for i in range(len(filename)):
@@ -89,7 +89,8 @@ def lambda_handler(event, context):
                                     'Key':'crm/'+ tmpfilename + '/' +filename[i]
                                 }
                             client.copy(copy_source, 'kunyekbucket', 'crm/'+ leadid + '/' +filename[i])
-                            s3.Object('kunyekbucket','crm/'+tmpfilename+ '/' +filename[i]).delete()  
+                            bucket.objects.filter(Prefix='crm/'+tmpfilename+ '/' +filename[i]).delete()
+                            # s3.Object('kunyekbucket','crm/'+tmpfilename+ '/' +filename[i]).delete()  
                             # client.delete_object(Bucket="kunyekbucket", Key='crm/'+tmpfilename+ '/' +filename[i])  
                             expiretime = now_asia.strftime(localFormat)  
                             datetimenow = str(expiretime)                            
@@ -104,8 +105,10 @@ def lambda_handler(event, context):
                             )
                             filedata.append({"filename":filename[i],"fileurl":url,"fileexp":datetimenow})
                             if len(filename)-1 == i:
-                                s3.Object('kunyekbucket','crm/'+tmpfilename).delete()  
+                                bucket.objects.filter(Prefix='crm/'+tmpfilename).delete()
+                                # s3.Object('kunyekbucket','crm/'+tmpfilename).delete()  
                                 # client.delete_object(Bucket="kunyekbucket", Key='crm/'+tmpfilename)  
+                    common.resetSerialNumber("crmlead")
                     sql = "INSERT INTO crmlead(leadid,appid,domainid,orgid, name,leadtype,mobile,email,address1,address2,product , post , organization,currency,amount,note,date, status,userid,sortby,filename,industrytype,leadsource) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                     data = (leadid,appid,domainid,orgid, name,leadtype, mobile, email, address1,address2,str(product), post, organization,currency,amount,note,date, status,userid,sortby,str(filedata),industrytype,leadsource)
                     cursor.execute(sql, data)
@@ -119,6 +122,7 @@ def lambda_handler(event, context):
                                 timestamp =str(int(time.time()*1000.0))
                                 productid = str(''.join([random.choice(string.digits+timestamp) for n in range(10)]))                  
                                 sortby = now_asia.strftime(sortbylocalFormat)
+                                common.resetSerialNumber("crmproduct")
                                 prosql = "INSERT INTO crmproduct(productid,domainid,appid,orgid,userid,skucode, name,price,sortby) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                 prodata = (productid,domainid,appid,orgid,userid,product[i]['skucode'],product[i]['name'],product[i]['price'],sortby)
                                 cursor.execute(prosql, prodata)
